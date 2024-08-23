@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "C:/Users/ivan.kim/anaconda3/envs/tf2/Lib/site-packages"
+    ]
+}
