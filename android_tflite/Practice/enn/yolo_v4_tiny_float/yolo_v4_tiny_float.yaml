@@ -1,0 +1,109 @@
+model_analyzer:
+    check: true                                       #[bool]: Check the op support status
+    device: Gen-6                                     #[Gen-5, Gen-5a, Gen-5b, Gen-6]: System on Chip type
+    level: 0                                          #[0, 1, 2, 3]: level for analyze model : 0 (OpCount), 1 (OpCount + Attribute), 2 (OpCount + Attribute + In/Out Shape), 3 (OpCount + Attribute + In/Out Shape + Mem Footprint)
+    snc_input: false                                  #[bool]: true: analyze the snc model, false: analyze the original model
+    
+database_gen:
+    database_spec: DATA/dbgen_spec.yaml               #[path]: DB genration dataset spec path (default path is {workspace}/DATA/db_spec.yaml)
+    
+converter:
+    SEG: false                                        #[bool]: If your model is Deeplab V3+ model, set this as true
+    SSD: false                                        #[bool]: If your model is SSD detection model, set this as true
+    TVM: false                                        #[bool]: Use tvm conversion path
+    device: Gen-5a                                    #[Gen-2, Gen-3, Gen-3DSP, Gen-4, Gen-4DSP, Gen-4Multi(only for fp16), Gen-5, Gen-5a, Gen-5b, Gen-6]: Soc type
+    do_quantize: true                                 #[bool]: Enable quantization
+    eltsum_cvt: true                                  #[bool]: enable eltwise conversion process; eltsum -> concat + conv
+    mean: 0                                           #[str]: Mean value(s), for multiple channel "128, 128, 128, ..." / y=x-MEAN
+    optimize: true                                    #[bool]: Use graph optimization
+    quantize_type: asymm                              #[symm, asymm, fp16, qat]: Select quantization type, quantized model (include caffeQAT) is "qat"
+    scale: 1                                          #[str]: Scale value(s), for multiple channel "128, 128, 128, ..." / ex> y=x/SCALE
+    fp16_data_format: channel_first                   #[channel_first, channel_last]: 
+    fp16_ifm_dtype: float16                           #[float16,float32,int32,int64]: IFM dtype(s), for multiple ipnut "float16, float16, ..."
+    fp16_ofm_dtype: float32                           #[float32]: OFM dtype(s), for multiple ipnut "float32, float32, ..."
+    fp16_raw_dtype: float32                           #[float32]: RAW dtype(s), for multiple ipnut "float32, float32, ..."
+    beta_quant_enhancement: false                     #[bool]: Apply quantization enhancement to increase accuracy. (not stable yet)(quantize_type:asym only)
+    bias_comp: false                                  #[bool]: Use bias compensation (Symm recommended).
+    bias_comp_batchsize: 30                           #[1-100]: Batchsize for bias compensation (maximum 30 is enough).
+    bias_comp_target_layers: 4                        #[unsigned int]: Number of layers to be compensated. Set "0" means all layers.
+    bw_ofm: 8                                         #[8, 16]: Bitwidth of intermediate feature map(A).
+    cpu: false                                        #[bool]: Use only cpu resources while conversion (very slow, but no memory limitation).
+    debug: false                                      #[bool]: check SQNR for all layers.
+    do_profile: true                                  #[bool]: If you already profiled for the model and want to skip profiling, set this 'false'
+    dspraw_gen: false                                 #[bool]: Enable raw file for DSP geneartion after quantization.
+    multi_core_tvgen: 0                               #[int]: use multicore TV gen
+    nq_fold: true                                     #[bool]: Speed-up by folding normalization parameters for input data (true: model input dtype is uint8, false: model input dtype is float32)
+    output_dtype: float32                             #[float32, uint8]: You can set model output datatpye as float32, uint8(only Asym).
+    profile_batchsize: 100                            #[unsigned int]: Batchsize for profile (value 100 is recommened).
+    quanmode: OPT                                     #[OPT, HYB (for quantize_type:symm) | MAX, OPT, AUTO (for quantize_type:asym)]: Quantization hyperparameters when quantize_type is (1)symm: HYB is recommended or when quantize_type is (2)asymm: MAX(lack of profile data less then 50), OPT, AUTO(enough profile data more then 700)
+    test_vector_gen: false                            #[bool]: Enable testvector geneartion after quantization.
+    tv_input: DATA/database.h5                        #[path]: Input data file path for testvector generation (default path is {workspace}/DATA/database.h5)
+    unsigned_a: false                                 #[bool]: Set model output datatype (true: model output dtype is uint8, false: model output dtype is int8)
+    use_randomdb: true                                #[bool]: Use randomdb for profiling data set
+    userdb: DATA/database.txt                         #[path]: Profling data set path (default path is {workspace}/DATA/database.txt)
+    
+compiler:
+    assign_cpu: null                                  #[str]: Assign specific layer to cpu device
+    assign_dsp: null                                  #[str]: Assign specific layer to dsp device
+    assign_gpu: null                                  #[str]: Assign specific layer to gpu device
+    best_fit_generalized: true                        #[bool]: Control whether generalized best fit allocation is to be used.
+    cast_in: sw                                       #[sw, hw, none]: Type casting fp32 to fp16 for nnc input data
+    cast_out: sw                                      #[sw, hw, none]: Type casting fp16 to fp32 for nnc output data
+    cfs: false                                        #[bool]: Enable cfifo sync
+    compiler: NPU                                     #[NPU]: Compiler option
+    datalayout_conversion_in: none                    #[sw, hw, none]: Data layout(NHWC) conversion for nnc input data
+    datalayout_conversion_out: none                   #[sw, hw, none]: Data layout(NHWC) conversion for nnc output data
+    debug_str: null                                   #[str]: debug str for compiler
+    dequant_type: sw                                  #[sw, hw, none]: dequantiztion type
+    device: Gen-5a                                    #[Gen-3, Gen-3b, Gen-4, Gen-5, Gen-5a, Gen-5b, Gen-6]: System on Chip type
+    enable_ofm_reuse: true                            #[bool]: Enable the reuse of OFM region for IMFM.
+    enable_stm: false                                 #[bool]: Generate compile log including L1 tiling information
+    flc: false                                        #[bool]: Enable featuremap lossless compression
+    fp16_swwa: false                                  #[bool]: Enable NPU fp16 workaround with psum_init
+    input_conversion: sw_cfu                          #[sw_cfu, hw_cfu, no_cfu]: Add a Tensor2Cell format converter node at start of network
+    mi: true                                          #[bool]: multiple input compile
+    mo: true                                          #[bool]: multiple output compile
+    multi_ncp: false                                  #[bool]: generate multi-ncp(ucgo) custom op
+    multi_vc: true                                    #[bool]: Introduce Multi-VC for OFM, IFM, and weight transfer
+    multicore: false                                  #[bool]: Enable NPU multicore
+    optimization: O2                                  #[O1, O2, O3]: Optimization choice
+    output_conversion: sw_icfu                        #[sw_icfu, hw_icfu, no_icfu]: Add a Tensor2Cell format converter node at end of network
+    packed_ucgo: true                                 #[bool]: true: generate one ucgo in nnc, false: generate multiple ucgos in nnc if there are multiple independent dsp OPs
+    preemption: false                                 #[bool]: Setting priority of NNC while compiling
+    quant_type: sw                                    #[sw, hw, none]: quantiztion type
+    sync_npu_dsp: true                                #[bool]: 
+    
+simulator:
+    data_format: channel_first                        #[channel_first, channel_last]: Indicate the position of channel of input
+    ifm_dtype: int8                                   #[int8, uint8, float32, float16, int32]: Indicate the data type of the model's input,[int8, uint8, float32, float16, int32] are supported
+    post_processing: false                            #[bool]: Execute post processing
+    post_processing_config: DATA/post_processing_config.yaml #[path]: post processing config path (default path is {workspace}/DATA/post_processing_config.yaml)
+    pre_processing: false                             #[bool]: Execute pre-processing
+    pre_processing_config: DATA/pre_processing_config.yaml #[path]: post processing config path (default path is {workspace}/DATA/post_processing_config.yaml)
+    use_randomdb: false                               #[bool]: Use randomdb to forward, just support single input
+    userdb: DATA/data.txt                             #[path]: Simulation data set path (default path is {workspace}/DATA/data.txt)
+    
+perf_estimator:
+    O2_enable: true                                   #[bool]: O2 optimization (true or false)
+    O2_fm_forwarding: true                            #[bool]: feature-map forwarding (true or false)
+    SEG: false                                        #[bool]: Set true if input model is Deeplab V3+
+    SSD: false                                        #[bool]: Set true if input model is SSD detection
+    bit_width_factor_FM: 1                            #[1,2]: Select feature map bit width factor (1 or 2)
+    bit_width_factor_FP16: false                      #[bool]: Set bit width factor as floating point (true or false)
+    bit_width_factor_weight: 1                        #[1,2]: Select weight bit width factor (1 or 2)
+    core_num: 2                                       #[1,2]: 1 for single core, 2 for instance-1
+    device: Gen-5                                     #[Gen-3, Gen-4, Gen-5, Gen-5a]: Select device type(Gen-3, Gen-4, Gen-5 or Gen-5a)
+    json_report: true                                 #[bool]: Enable report json format
+    nq_fold: true                                     #[bool]: Speed-up by folding normalization parameters for input data (true: model input dtype is uint8, false: model input dtype is float32)
+    
+profiler:
+    iter: 1                                           #[number]: This decides how many time the model inference will be processed.
+    mode: performance                                 #[lowpower, balanced, performance, boost]: 1. Low power mode : Mode for low power consumption and low performance. 2. Balanced mode : Mode for medium power consumption and medium performance. 3. Performance mode : Mode for high power consumption and high performance. 4. Boost mode : Mode for very high power consumption and very high performance.
+    target: model                                     #[model, system]: profiling target.
+    test_type: lib                                    #[lib, service]: ENN running mode
+    tv_threshold: 0.0001                              #[number]: The value is used for tolerance threshold of output match verification.
+    core_num: multiple                                #[single, multiple]: The number of NPU core
+    device: Gen-6npu                                  #[Gen-3, Gen-4, Gen-4dsp, Gen-5, Gen-5npu, Gen-5a, Gen-5anpu, Gen-6, Gen-6npu]: Target device
+    remote_ssh_config_path: DATA/remote_ssh_config.yaml #[path]: remote testing ssh config path (default path is {workspace}/DATA/remote_ssh_config.yaml)
+    ssh_bool: SSH_FALSE                               #[SSH_FALSE, SSH_TRUE]: Connect to the device through ssh
+    
